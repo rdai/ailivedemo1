@@ -166,7 +166,10 @@ def evaluate():
     except requests.exceptions.ConnectionError:
         return jsonify({"error": "Could not reach that URL. Check the address and try again."}), 400
     except requests.exceptions.HTTPError as e:
-        return jsonify({"error": f"The page returned an error: {e.response.status_code}"}), 400
+        code = e.response.status_code
+        if code in (401, 403, 429):
+            return jsonify({"error": f"The website blocked access ({code}). Use the Paste Text tab instead.", "blocked": True}), 400
+        return jsonify({"error": f"The website returned an error ({code})."}), 400
 
     if not content or len(content) < 50:
         return jsonify({"error": "Could not extract readable text from that URL."}), 400

@@ -160,11 +160,18 @@
       font-size: 0.8rem;
       color: var(--muted);
     }
-    .error-box .switch-link {
-      color: var(--accent);
+    .btn-hint {
+      margin-top: 0.6rem;
+      padding: 0.45rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
       cursor: pointer;
-      text-decoration: underline;
     }
+    .btn-hint:hover { background: var(--accent-hover); }
 
     /* Results */
     #results { display: none; }
@@ -273,8 +280,7 @@
     <div class="error-box" id="error-box">
       <div id="error-msg"></div>
       <div class="error-hint" id="error-hint" style="display:none">
-        The site may be blocking automated access.
-        <span class="switch-link" onclick="switchTab('paste')">Paste the story text instead.</span>
+        <button class="btn-hint" onclick="switchTab('paste')">Switch to Paste Text &rarr;</button>
       </div>
     </div>
 
@@ -456,8 +462,7 @@
         setLoading(false);
 
         if (!res.ok || data.error) {
-          const is403 = data.error && (data.error.includes('403') || data.error.includes('could not'));
-          showError(data.error || 'An unexpected error occurred.', is403);
+          showError(data.error || 'An unexpected error occurred.', !!data.blocked);
           return;
         }
 
