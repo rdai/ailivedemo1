@@ -1,0 +1,4 @@
+flask>=3.1
+anthropic>=0.109
+requests>=2.34
+beautifulsoup4>=4.15
