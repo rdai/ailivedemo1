@@ -81,7 +81,13 @@ Overall verdict rules:
 def fetch_story(url: str) -> tuple[str, str]:
     """Fetch URL and extract title + main text content."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; StoryEvaluator/1.0)"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "Upgrade-Insecure-Requests": "1",
     }
     resp = requests.get(url, headers=headers, timeout=15)
     resp.raise_for_status()
@@ -173,6 +179,31 @@ def evaluate():
         return jsonify({"error": f"AI evaluation failed: {str(e)}"}), 500
 
     result["url"] = url
+    result["char_count"] = len(content)
+    return jsonify(result)
+
+
+@app.route("/evaluate-text", methods=["POST"])
+def evaluate_text():
+    data = request.get_json()
+    title = (data or {}).get("title", "").strip()
+    content = (data or {}).get("content", "").strip()
+
+    if not content or len(content) < 50:
+        return jsonify({"error": "Please paste at least 50 characters of story content."}), 400
+
+    if not ANTHROPIC_API_KEY:
+        return jsonify({"error": "ANTHROPIC_API_KEY is not configured on the server"}), 500
+
+    content = content[:8000]
+    try:
+        result = evaluate_story(title, content)
+    except json.JSONDecodeError:
+        return jsonify({"error": "Evaluation returned an unexpected format. Please try again."}), 500
+    except anthropic.APIError as e:
+        return jsonify({"error": f"AI evaluation failed: {str(e)}"}), 500
+
+    result["url"] = ""
     result["char_count"] = len(content)
     return jsonify(result)
 
